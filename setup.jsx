@@ -115,6 +115,38 @@ const mockNativeComponent = (viewName) => {
   return Component;
 };
 
+function mockModal(BaseComponent) {
+  class ModalMock extends BaseComponent {
+    render() {
+      return (
+        <BaseComponent {...this.props}>
+          {this.props.visible !== true ? null : this.props.children}
+        </BaseComponent>
+      );
+    }
+  }
+  return ModalMock;
+}
+
+function execute(fun, context, args) {
+  return fun.apply(context, args);
+}
+
+function reportError(error) {
+  throw error;
+}
+
+const ErrorUtils = {
+  apply: jest.fn(execute),
+  applyWithGuard: jest.fn(execute),
+  guard: jest.fn((callback) => callback),
+  inGuard: jest.fn().mockReturnValue(true),
+  reportError: jest.fn(reportError),
+  setGlobalHandler: jest.fn(),
+};
+
+jest.doMock("react-native/Libraries/vendor/core/ErrorUtils", ErrorUtils);
+
 jest
   .mock("react-native/Libraries/Core/InitializeCore", () => {})
   .mock("react-native/Libraries/Core/NativeExceptionsManager", () => ({
@@ -123,53 +155,55 @@ jest
     },
   }))
   .mock("react-native/Libraries/ReactNative/UIManager", () => ({
-    AndroidViewPager: {
-      Commands: {
-        setPage: jest.fn(),
-        setPageWithoutAnimation: jest.fn(),
-      },
-    },
-    blur: jest.fn(),
-    createView: jest.fn(),
-    customBubblingEventTypes: {},
-    customDirectEventTypes: {},
-    dispatchViewManagerCommand: jest.fn(),
-    focus: jest.fn(),
-    getViewManagerConfig: jest.fn((name) => {
-      if (name === "AndroidDrawerLayout") {
-        return {
-          Constants: {
-            DrawerPosition: {
-              Left: 10,
-            },
-          },
-        };
-      }
-    }),
-    hasViewManagerConfig: jest.fn((name) => {
-      return name === "AndroidDrawerLayout";
-    }),
-    measure: jest.fn(),
-    manageChildren: jest.fn(),
-    removeSubviewsFromContainerWithID: jest.fn(),
-    replaceExistingNonRootView: jest.fn(),
-    setChildren: jest.fn(),
-    updateView: jest.fn(),
-    AndroidDrawerLayout: {
-      Constants: {
-        DrawerPosition: {
-          Left: 10,
+    default: {
+      AndroidViewPager: {
+        Commands: {
+          setPage: jest.fn(),
+          setPageWithoutAnimation: jest.fn(),
         },
       },
-    },
-    AndroidTextInput: {
-      Commands: {},
-    },
-    ScrollView: {
-      Constants: {},
-    },
-    View: {
-      Constants: {},
+      blur: jest.fn(),
+      createView: jest.fn(),
+      customBubblingEventTypes: {},
+      customDirectEventTypes: {},
+      dispatchViewManagerCommand: jest.fn(),
+      focus: jest.fn(),
+      getViewManagerConfig: jest.fn((name) => {
+        if (name === "AndroidDrawerLayout") {
+          return {
+            Constants: {
+              DrawerPosition: {
+                Left: 10,
+              },
+            },
+          };
+        }
+      }),
+      hasViewManagerConfig: jest.fn((name) => {
+        return name === "AndroidDrawerLayout";
+      }),
+      measure: jest.fn(),
+      manageChildren: jest.fn(),
+      removeSubviewsFromContainerWithID: jest.fn(),
+      replaceExistingNonRootView: jest.fn(),
+      setChildren: jest.fn(),
+      updateView: jest.fn(),
+      AndroidDrawerLayout: {
+        Constants: {
+          DrawerPosition: {
+            Left: 10,
+          },
+        },
+      },
+      AndroidTextInput: {
+        Commands: {},
+      },
+      ScrollView: {
+        Constants: {},
+      },
+      View: {
+        Constants: {},
+      },
     },
   }))
   .mock("react-native/Libraries/Image/Image", () =>
@@ -186,9 +220,10 @@ jest
       getNativeRef: jest.fn(),
     })
   )
-  .mock("react-native/Libraries/Modal/Modal", () => {
-    const baseComponent = mockComponent("react-native/Libraries/Modal/Modal");
-    const mockModal = jest.requireActual("./mockModal");
+  .mock("react-native/Libraries/Modal/Modal", async () => {
+    const baseComponent = await mockComponent(
+      "react-native/Libraries/Modal/Modal"
+    );
     return mockModal(baseComponent);
   })
   .mock("react-native/Libraries/Components/View/View", () =>
