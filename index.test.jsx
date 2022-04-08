@@ -1,10 +1,12 @@
 import React from 'react'
 import { test, expect } from 'vitest';
 import { HelloWorldApp } from './index';
-import renderer from 'react-test-renderer'
+import renderer from '@testing-library/react-native'
 
 test('HelloWorldApp', () => {
-    expect(renderer.create(<HelloWorldApp />).toJSON()).toMatchInlineSnapshot(`
+    const view = renderer.render(<HelloWorldApp />)
+    expect(view.getByText(/Hello/)).toBeTruthy()
+    expect(view.toJSON()).toMatchInlineSnapshot(`
       <View
         style={
           {
