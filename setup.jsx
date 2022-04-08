@@ -474,18 +474,20 @@ jest
     "react-native/Libraries/NativeComponent/NativeComponentRegistry",
     () => {
       return {
-        get: jest.fn((name, viewConfigProvider) => {
-          return mockNativeComponent(name);
-        }),
-        getWithFallback_DEPRECATED: jest.fn((name, viewConfigProvider) => {
-          return mockNativeComponent(name);
-        }),
-        setRuntimeConfigProvider: jest.fn(),
-      };
+        default: {
+            get: jest.fn((name, viewConfigProvider) => {
+              return mockNativeComponent(name);
+            }),
+            getWithFallback_DEPRECATED: jest.fn((name, viewConfigProvider) => {
+              return mockNativeComponent(name);
+            }),
+            setRuntimeConfigProvider: jest.fn(),
+          }
+        }
     }
   )
   .mock("react-native/Libraries/ReactNative/requireNativeComponent", () => {
-    return mockNativeComponent;
+    return { default: mockNativeComponent };
   })
   .mock(
     "react-native/Libraries/Utilities/verifyComponentAttributeEquivalence",
@@ -502,7 +504,6 @@ jest
     Component.displayName = "View";
 
     return {
-      __esModule: true,
       default: Component,
     };
   });

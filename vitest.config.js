@@ -104,6 +104,14 @@ module.exports = defineConfig({
             ),
           };
         }
+        if (id.includes("ReactFabric")) {
+          return {
+            code: code.replace(
+              "import { BatchedBridge } from 'react-native/Libraries/ReactPrivate/ReactNativePrivateInterface';",
+              "import BatchedBridge from '../BatchedBridge/BatchedBridge';"
+            ),
+          };
+        }
         if (id.includes("symbolicateStackTrace")) {
           return {
             code: code.replace("??", "||"),
